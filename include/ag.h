@@ -3,4 +3,5 @@
 
 #include "agtypes.h"
 #include "drawing.h"
+#include "fileio.h"
 #include "window.h"
