@@ -16,14 +16,12 @@ void gotoxy(int x, int y) {
 #endif
 }
 
-AGWindow agCreateWindow(wmax_t pos_x, wmax_t pos_y, wmax_t w, wmax_t h) {
+AGWindow agCreateWindow(wmax_t w, wmax_t h) {
     AGWindow ret;
-    ret.x = pos_x;
-    ret.y = pos_y;
     ret.w = w;
     ret.h = h;
     ret.frame = (wcol_t**)malloc(h * sizeof(wcol_t*));
-    ret.buffer = (wcol_t*)malloc(pos_x ? w + 1 : w * (h + 1) + 1);
+    ret.buffer = (wcol_t*)malloc(w * (h + 1) + 1);
     for (wmax_t y = 0; y < h; ++y) {
         ret.frame[y] = (wcol_t*)malloc(w);
     }
@@ -45,30 +43,12 @@ void agKillWindow(AGWindow* window) {
     window->frame = NULL;
 }
 
-void agRepositionWindow(AGWindow* window, wmax_t x, wmax_t y) {
-    if (x != window->x) {
-        wcol_t* buffPtr = (wcol_t*)realloc(
-            window->buffer,
-            window->x ? window->w + 1 : window->w * (window->h + 1) + 1
-        );
-        if (!buffPtr) {
-            return;
-        }
-        window->buffer = buffPtr;
-    }
-    window->x = x;
-    window->y = y;
-}
-
 void agResizeWindow(AGWindow* window, wmax_t w, wmax_t h) {
     if (w == window->w && h == window->h) {
         return;
     }
     wcol_t** framePtr = (wcol_t**)realloc(window->frame, h * sizeof(wcol_t*));
-    wcol_t* buffPtr = (wcol_t*)realloc(
-        window->buffer,
-        window->x ? w + 1 : w * (h + 1) + 1
-    );
+    wcol_t* buffPtr = (wcol_t*)realloc(window->buffer, w * (h + 1) + 1);
     if (!framePtr || !buffPtr) {
         return;
     }
@@ -85,30 +65,20 @@ void agSwapBuffers(AGWindow* window) {
     if (!window->frame || !window->buffer) {
         return;
     }
-    if (window->x) {
-        for (wmax_t y = 0; y < window->h; ++y) {
-            for (wmax_t x = 0; x < window->w; ++x) {
-                window->buffer[x] = _SCALE[window->frame[y][x] >> 2];
-            }
-            window->buffer[window->x] = '\0';
-            gotoxy(window->x, window->y + y);
-            fputs(window->buffer, stdout);
+    long i = 0;
+    for (wmax_t y = 0; y < window->h; ++y) {
+        for (wmax_t x = 0; x < window->w; ++x) {
+            window->buffer[i] = _SCALE[window->frame[y][x] >> 2];
+            ++i;
         }
-    }
-    else {
-        long i = 0;
-        for (wmax_t y = 0; y < window->h; ++y) {
-            for (wmax_t x = 0; x < window->w; ++x) {
-                window->buffer[i] = _SCALE[window->frame[y][x] >> 2];
-                ++i;
-            }
+        if (y != window->h - 1) {
             window->buffer[i] = '\n';
             ++i;
         }
-        window->buffer[i] = '\0';
-        gotoxy(0, window->y);
-        fputs(window->buffer, stdout);
     }
+    window->buffer[i] = '\0';
+    gotoxy(0, 0);
+    fputs(window->buffer, stdout);
 }
 
 int agWindowIsAlive(AGWindow* window) {

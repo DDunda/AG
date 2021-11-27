@@ -6,10 +6,9 @@
 
 #define _SCALE "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?+-~i!Il;:,^.' "
 
-AGWindow agCreateWindow(wmax_t pos_x, wmax_t pos_y, wmax_t w, wmax_t h);
+AGWindow agCreateWindow(wmax_t w, wmax_t h);
 void agFillWindow(AGWindow* window, wcol_t value);
 void agKillWindow(AGWindow* window);
-void agRepositionWindow(AGWindow* window, wmax_t x, wmax_t y);
 void agResizeWindow(AGWindow* window, wmax_t w, wmax_t h);
 void agSwapBuffers(AGWindow* window);
 int agWindowIsAlive(AGWindow* window);

@@ -8,8 +8,6 @@
 #define AG_FALSE 2
 
 typedef struct {
-    wmax_t x;
-    wmax_t y;
     wmax_t w;
     wmax_t h;
     wcol_t** frame;
