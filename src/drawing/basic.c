@@ -3,14 +3,12 @@
 
 void agDrawBox(AGWindow* window, wmax_t x, wmax_t y, wmax_t w, wmax_t h, wcol_t value) {
 #ifndef IGNORE_POSITION_SAFETY
-    if (x + w >= window->w || y + h >= window->h) {
+    if (x + w > window->w || y + h > window->h) {
         return;
     }
 #endif
     for (wmax_t dy = y; dy < y + h; ++dy) {
-        for (wmax_t dx = y; dx < x + w; ++dx) {
-            window->frame[dy][dx] = value;
-        }
+        memset(window->frame[dy] + x, value, w);
     }
 }
 
@@ -20,9 +18,7 @@ void agDrawHorizontal(AGWindow* window, wmax_t y, wcol_t value) {
         return;
     }
 #endif
-    for (wmax_t x = 0; x < window->w; ++x) {
-        window->frame[y][x] = value;
-    }
+    memset(window->frame[y], value, window->w);
 }
 
 void agDrawVertical(AGWindow* window, wmax_t x, wcol_t value) {

@@ -21,10 +21,12 @@ AGWindow agCreateWindow(wmax_t w, wmax_t h) {
     ret.w = w;
     ret.h = h;
     ret.frame = (wcol_t**)malloc(h * sizeof(wcol_t*));
-    ret.buffer = (wcol_t*)malloc(w * (h + 1) + 1);
+    ret.buffer = (wcol_t*)malloc((w + 1) * h);
     for (wmax_t y = 0; y < h; ++y) {
         ret.frame[y] = (wcol_t*)malloc(w);
+        ret.buffer[y * (w + 1) + w] = '\n';
     }
+    ret.buffer[(w + 1) * h - 1] = '\0';
     return ret;
 }
 
@@ -37,6 +39,9 @@ void agFillWindow(AGWindow* window, wcol_t value) {
 void agKillWindow(AGWindow* window) {
     window->w = 0;
     window->h = 0;
+    for (int y = 0; y < window->h; y++) {
+        free(window->frame[y]);
+    }
     free(window->buffer);
     free(window->frame);
     window->buffer = NULL;
@@ -48,13 +53,15 @@ void agResizeWindow(AGWindow* window, wmax_t w, wmax_t h) {
         return;
     }
     wcol_t** framePtr = (wcol_t**)realloc(window->frame, h * sizeof(wcol_t*));
-    wcol_t* buffPtr = (wcol_t*)realloc(window->buffer, w * (h + 1) + 1);
+    wcol_t* buffPtr = (wcol_t*)realloc(window->buffer, (w + 1) * h);
     if (!framePtr || !buffPtr) {
         return;
     }
     for (wmax_t y = 0; y < h; ++y) {
         framePtr[y] = (wcol_t*)realloc(window->frame[y], w);
+        buffPtr[y * (w + 1) + w] = '\n';
     }
+    buffPtr[(w + 1) * h - 1] = '\0';
     window->w = w;
     window->h = h;
     window->frame = framePtr;
@@ -71,12 +78,8 @@ void agSwapBuffers(AGWindow* window) {
             window->buffer[i] = _SCALE[window->frame[y][x] >> 2];
             ++i;
         }
-        if (y != window->h - 1) {
-            window->buffer[i] = '\n';
-            ++i;
-        }
+        ++i;
     }
-    window->buffer[i] = '\0';
     gotoxy(0, 0);
     fputs(window->buffer, stdout);
 }
